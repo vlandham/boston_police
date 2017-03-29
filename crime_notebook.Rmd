@@ -9,6 +9,7 @@ library(mapproj)
 library(tidyverse)
 library(ggthemes)
 library(forcats)
+library(lubridate)
 ```
 
 ```{r}
@@ -26,6 +27,53 @@ incident_data %>% filter(OFFENSE_CODE_GROUP == 'Drug Violation') %>%
   ggplot(aes(x = as.factor(YEAR))) +
   geom_bar(stat = 'count') 
 ```
+
+
+```{r}
+incident_data <- incident_data %>% mutate(date = ymd_hms(OCCURRED_ON_DATE), hour = hour(date))
+```
+
+```{r}
+incident_data %>% mutate(month = month(date, abbr = TRUE, label = TRUE)) %>%  
+  group_by(month) %>% summarise(count = n()) %>%
+  ggplot(aes(x = month, y = count, group = 1)) + 
+  geom_line()
+```
+
+```{r}
+incident_data %>% #group_by(hour) %>% summarise(count = n()) %>%
+  ggplot(aes(x = hour)) +
+  geom_bar()
+
+```
+
+```{r}
+byHour <- incident_data %>% group_by(OFFENSE_CODE_GROUP) %>% mutate(group_total = n()) %>% 
+  group_by(OFFENSE_CODE_GROUP, hour) %>% summarise(count = n(), per = count / group_total[1])
+```
+
+```{r}
+byGroup <- incident_data %>% group_by(OFFENSE_CODE_GROUP) %>% summarise(count = n()) %>% arrange(-count)
+topGroups <- byGroup %>% head(n = 20)
+```
+
+
+```{r}
+byHour %>% filter(OFFENSE_CODE_GROUP %in% topGroups$OFFENSE_CODE_GROUP) %>%
+  ggplot(aes(x = hour, y = per)) + 
+  geom_bar(stat = "identity") + 
+  facet_wrap(~ OFFENSE_CODE_GROUP)
+```
+
+```{r}
+topGroups %>% 
+      ggplot(aes(x = fct_rev(fct_inorder(OFFENSE_CODE_GROUP)), y = count)) +
+      coord_flip() + 
+      geom_bar(stat = "identity") +
+      theme_bw() +
+      labs(title = "Top Groups by Total Count")
+```
+
 
 
 ```{r, message=FALSE, warning=FALSE, include=FALSE}
