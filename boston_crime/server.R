@@ -11,6 +11,7 @@ library(shiny)
 library(tidyverse)
 library(ggthemes)
 library(forcats)
+library(lubridate)
 
 # https://github.com/ramnathv/htmlwidgets
 # seems to be the accepted way to extend
