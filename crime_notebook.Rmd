@@ -18,6 +18,11 @@ incident_data <- read_csv(filename)
 ```
 
 ```{r}
+incident_data <- incident_data %>% rename(lng = Long, lat = Lat)
+```
+
+
+```{r}
 offense_group <- incident_data %>% group_by(OFFENSE_CODE_GROUP)  %>% summarise(count = n()) %>% arrange(-count)
 write_csv(offense_group, './boston_crime/data/offense_group.csv')
 ```
@@ -72,6 +77,17 @@ topGroups %>%
       geom_bar(stat = "identity") +
       theme_bw() +
       labs(title = "Top Groups by Total Count")
+```
+
+```{r, fig.width=4}
+incident_data %>% filter(lng < -60) %>% filter(OFFENSE_CODE_GROUP %in% topGroups$OFFENSE_CODE_GROUP) %>%
+  ggplot(aes(x = lng, y = lat)) +
+  geom_point(size = 0.4, alpha = 1 / 100) + 
+  facet_wrap(~ OFFENSE_CODE_GROUP) +
+  theme_map() + 
+  coord_quickmap() +
+  #coord_map("mercator") +
+  labs(title = "")
 ```
 
 

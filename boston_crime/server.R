@@ -1,10 +1,7 @@
 #
-# This is the server logic of a Shiny web application. You can run the 
+# This is the server logic of a Shiny web application. 
+# If you are viewing this in RStudio, you can run the 
 # application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-# 
-#    http://shiny.rstudio.com/
 #
 
 library(shiny)
@@ -88,15 +85,6 @@ shinyServer(function(input, output) {
     }
   })
   
- # output$locationPlot <- renderPlot({
- #   filtered_incidents() %>% filter(lng < -60) %>%
- #     ggplot(aes(x = lng, y = lat, color = OFFENSE_CODE_GROUP)) +
- #     geom_point(size = 0.4, alpha = 1 / 10) + 
- #     theme_map() + 
- #     coord_map("mercator") +
- #     labs(title = paste("Location of Incident Reports for ", input$offense_group, sep = ""))
- # })
-  
   output$hourPlot <- renderPlot({
     filtered_incidents() %>% 
       ggplot(aes(x = hour)) + 
@@ -108,6 +96,10 @@ shinyServer(function(input, output) {
   
   output$hourTitle <- renderText({
     paste(input$offense_group, " Counts by Hour", sep = "")
+  })
+  
+  output$mapTitle <- renderText({
+    paste("Map of ", input$offense_group, " Incident Locations", sep = "")
   })
   
   
@@ -147,8 +139,18 @@ shinyServer(function(input, output) {
       ggplot(aes(x = fct_rev(fct_inorder(OFFENSE_CODE_GROUP)), y = count)) +
       geom_bar(stat = "identity") +
       coord_flip() + 
-      theme_bw() 
+      theme_bw() +
       labs(title = "", x = "", y = "Count")
+  })
+  
+  output$locSmallMult <- renderPlot({
+    incident_data %>% filter(lng < -60) %>% filter(OFFENSE_CODE_GROUP %in% topGroups$OFFENSE_CODE_GROUP) %>%
+      ggplot(aes(x = lng, y = lat)) +
+      geom_point(size = 0.4, alpha = 1 / 20) + 
+      theme_map() + 
+      coord_quickmap() +
+      labs(title = "") +
+      facet_wrap(~ OFFENSE_CODE_GROUP, ncol = 2) 
   })
   
 })
